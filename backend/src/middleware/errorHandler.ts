@@ -1,70 +1,48 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
-export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-  logger.error('Error occurred:', {
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
-  });
+export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+  logger.error('Error:', error);
 
-  // Default error
-  let status = 500;
-  let message = 'Internal server error';
-
-  // Handle specific error types
-  if (err.name === 'ValidationError') {
-    status = 400;
-    message = 'Validation error';
-  } else if (err.name === 'UnauthorizedError') {
-    status = 401;
-    message = 'Unauthorized';
-  } else if (err.name === 'ForbiddenError') {
-    status = 403;
-    message = 'Forbidden';
-  } else if (err.name === 'NotFoundError') {
-    status = 404;
-    message = 'Not found';
-  } else if (err.name === 'ConflictError') {
-    status = 409;
-    message = 'Conflict';
-  } else if (err.name === 'TooManyRequestsError') {
-    status = 429;
-    message = 'Too many requests';
-  } else if (err.code === '23505') { // PostgreSQL unique violation
-    status = 409;
-    message = 'Resource already exists';
-  } else if (err.code === '23503') { // PostgreSQL foreign key violation
-    status = 400;
-    message = 'Invalid reference';
-  } else if (err.code === '23502') { // PostgreSQL not null violation
-    status = 400;
-    message = 'Required field missing';
-  } else if (err.code === '23514') { // PostgreSQL check violation
-    status = 400;
-    message = 'Invalid data';
+  if (error.name === 'ValidationError') {
+    return res.status(400).json({
+      error: 'Validation Error',
+      message: error.message,
+      details: error.details
+    });
   }
 
-  // Don't leak error details in production
-  if (process.env.NODE_ENV === 'production' && status === 500) {
-    message = 'Internal server error';
+  if (error.name === 'UnauthorizedError') {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid or missing authentication token'
+    });
   }
 
-  res.status(status).json({
-    success: false,
-    error: message,
-    ...(process.env.NODE_ENV === 'development' && { details: err.message, stack: err.stack })
-  });
-}
+  if (error.code === '23505') { // PostgreSQL unique violation
+    return res.status(409).json({
+      error: 'Conflict',
+      message: 'Resource already exists'
+    });
+  }
 
-export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
+  if (error.code === '23503') { // PostgreSQL foreign key violation
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Referenced resource does not exist'
+    });
+  }
+
+  // Default error response
+  res.status(error.status || 500).json({
+    error: error.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+  });
+};
+
+export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json({
-    success: false,
-    error: 'Route not found',
-    path: req.path,
-    method: req.method
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`
   });
-}
+};

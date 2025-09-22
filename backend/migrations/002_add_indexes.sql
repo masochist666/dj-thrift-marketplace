@@ -83,3 +83,4 @@ CREATE INDEX idx_playlists_public ON playlists(is_public);
 CREATE INDEX idx_playlist_tracks_playlist ON playlist_tracks(playlist_id);
 CREATE INDEX idx_playlist_tracks_track_file ON playlist_tracks(track_file_id);
 CREATE INDEX idx_playlist_tracks_position ON playlist_tracks(position);
+

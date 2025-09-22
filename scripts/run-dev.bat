@@ -50,3 +50,4 @@ REM Kill all Node.js processes
 taskkill /f /im node.exe >nul 2>&1
 echo 🛑 All servers stopped.
 pause
+

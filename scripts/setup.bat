@@ -56,3 +56,4 @@ echo 4. Run 'npm run dev' to start the development servers
 echo.
 echo Happy coding! 🎵
 pause
+

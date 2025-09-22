@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
@@ -6,33 +6,44 @@ import toast from 'react-hot-toast';
 interface User {
   id: string;
   email: string;
-  role: number;
-  is_verified: boolean;
-  display_name: string;
-  avatar_url?: string;
-  reputation: number;
-  credits_balance: number;
-  created_at: string;
+  username: string;
+  profile?: {
+    display_name: string;
+    bio: string;
+    avatar_url: string;
+  };
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
-  logout: () => void;
   loading: boolean;
-  updateUser: (userData: Partial<User>) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, username: string) => Promise<void>;
+  logout: () => void;
+  updateProfile: (data: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
@@ -43,11 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/me');
+      const response = await api.get('/auth/me');
       setUser(response.data.user);
     } catch (error) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('token');
       delete api.defaults.headers.common['Authorization'];
     } finally {
       setLoading(false);
@@ -57,14 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { access_token, refresh_token, user } = response.data;
+      const { user, token } = response.data;
       
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      toast.success('Welcome back!');
+      
+      toast.success('Login successful!');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Login failed');
@@ -72,21 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, displayName: string) => {
+  const register = async (email: string, password: string, username: string) => {
     try {
-      const response = await api.post('/auth/register', { 
-        email, 
-        password, 
-        display_name: displayName 
-      });
-      const { access_token, refresh_token, user } = response.data;
+      const response = await api.post('/auth/register', { email, password, username });
+      const { user, token } = response.data;
       
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      toast.success('Account created successfully!');
+      
+      toast.success('Registration successful!');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -95,36 +99,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    toast.success('Logged out successfully');
     router.push('/');
+    toast.success('Logged out successfully');
   };
 
-  const updateUser = (userData: Partial<User>) => {
-    setUser(prev => prev ? { ...prev, ...userData } : null);
+  const updateProfile = async (data: any) => {
+    try {
+      const response = await api.put('/auth/profile', data);
+      setUser(response.data.user);
+      toast.success('Profile updated successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Profile update failed');
+      throw error;
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    updateProfile,
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      register, 
-      logout, 
-      loading, 
-      updateUser 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+};

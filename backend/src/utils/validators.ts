@@ -26,3 +26,4 @@ export const loginSchema = [
     .notEmpty()
     .withMessage('Password is required')
 ];
+

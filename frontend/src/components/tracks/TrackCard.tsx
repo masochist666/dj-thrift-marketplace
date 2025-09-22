@@ -135,3 +135,4 @@ export function TrackCard({ track, showActions = true }: TrackCardProps) {
     </motion.div>
   );
 }
+

@@ -73,3 +73,4 @@ echo "3. Run 'npm run migrate' to set up the database"
 echo "4. Run 'npm run dev' to start the development servers"
 echo ""
 echo "Happy coding! 🎵"
+

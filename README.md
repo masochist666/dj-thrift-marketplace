@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🎶 DJ Thrift Marketplace
 
 A peer-to-peer DJ track trading platform built with modern web technologies. Trade, buy, and sell DJ tracks with built-in audio analysis, real-time trading, and community features.
@@ -23,16 +22,16 @@ A peer-to-peer DJ track trading platform built with modern web technologies. Tra
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- PostgreSQL 15+
-- Redis 7+
+- Node.js 18+ and npm 8+
+- PostgreSQL 14+
+- Redis 6+
 - Docker (optional)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/dj-thrift-marketplace.git
+   git clone https://github.com/masochist666/dj-thrift-marketplace.git
    cd dj-thrift-marketplace
    ```
 
@@ -41,48 +40,38 @@ A peer-to-peer DJ track trading platform built with modern web technologies. Tra
    npm run setup
    ```
 
-3. **Set up environment variables**
+3. **Environment Setup**
    ```bash
-   # Backend
-   cp backend/env.example backend/.env
+   # Backend environment
+   cp backend/.env.example backend/.env
    # Edit backend/.env with your configuration
    
-   # Frontend
-   cp frontend/.env.local.example frontend/.env.local
-   # Edit frontend/.env.local with your configuration
+   # Frontend environment
+   cp frontend/.env.example frontend/.env
+   # Edit frontend/.env with your configuration
    ```
 
-4. **Set up the database**
+4. **Database Setup**
    ```bash
    npm run migrate
    npm run seed
    ```
 
-5. **Start the development servers**
+5. **Start Development**
    ```bash
    npm run dev
    ```
 
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
+### Docker Setup (Alternative)
 
-### Docker Deployment
+```bash
+# Start all services with Docker
+npm run docker:up
 
-1. **Build and start all services**
-   ```bash
-   docker-compose up --build
-   ```
-
-2. **Run in background**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **Stop services**
-   ```bash
-   docker-compose down
-   ```
+# Or build and start
+npm run docker:build
+npm run docker:up
+```
 
 ## 📁 Project Structure
 
@@ -90,49 +79,41 @@ The application will be available at:
 dj-thrift-marketplace/
 ├── backend/                 # Node.js/Express API
 │   ├── src/
-│   │   ├── controllers/     # Route controllers
-│   │   ├── models/          # Data models
-│   │   ├── routes/          # API routes
-│   │   ├── services/        # Business logic
-│   │   ├── middleware/      # Express middleware
-│   │   └── utils/           # Utility functions
-│   ├── migrations/          # Database migrations
-│   └── tests/               # Backend tests
-├── frontend/                # React/Next.js frontend
+│   │   ├── services/       # Business logic services
+│   │   ├── routes/         # API routes
+│   │   ├── middleware/     # Express middleware
+│   │   └── utils/          # Utility functions
+│   ├── migrations/         # Database migrations
+│   └── package.json
+├── frontend/               # Next.js React app
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── pages/           # Next.js pages
-│   │   ├── contexts/        # React contexts
-│   │   ├── hooks/           # Custom hooks
-│   │   ├── services/        # API services
-│   │   └── utils/           # Utility functions
-│   └── public/              # Static assets
-├── shared/                  # Shared types and utilities
-└── docker-compose.yml       # Docker configuration
+│   │   ├── components/    # React components
+│   │   ├── pages/         # Next.js pages
+│   │   ├── contexts/      # React contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   └── services/      # API services
+│   └── package.json
+├── scripts/               # Setup and deployment scripts
+├── docker-compose.yml     # Docker orchestration
+└── README.md
 ```
 
 ## 🛠️ Development
 
 ### Backend Development
-
 ```bash
 cd backend
-npm run dev          # Start development server
+npm run dev          # Start with nodemon
 npm run build        # Build for production
-npm run test         # Run tests
-npm run migrate      # Run database migrations
-npm run seed         # Seed database with sample data
+npm test            # Run tests
 ```
 
 ### Frontend Development
-
 ```bash
 cd frontend
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript type checking
+npm run dev         # Start Next.js dev server
+npm run build       # Build for production
+npm test           # Run tests
 ```
 
 ## 🔧 Configuration
@@ -144,31 +125,31 @@ npm run type-check   # Run TypeScript type checking
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password
 DB_NAME=dj_thrift
+DB_USER=your_username
+DB_PASSWORD=your_password
 
 # Redis
 REDIS_URL=redis://localhost:6379
 
 # JWT
-JWT_SECRET=your-super-secret-jwt-key
-JWT_REFRESH_SECRET=your-super-secret-refresh-key
+JWT_SECRET=your_jwt_secret
 
-# AWS
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+# AWS S3
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_REGION=us-east-1
-S3_BUCKET=your-s3-bucket
+AWS_S3_BUCKET=your_bucket_name
 
 # Stripe
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+STRIPE_SECRET_KEY=your_stripe_secret
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
 
-# Server
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email
+SMTP_PASS=your_password
 ```
 
 #### Frontend (.env.local)
@@ -177,76 +158,47 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 NEXT_PUBLIC_WS_URL=http://localhost:5000
 ```
 
-## 📊 API Documentation
+## 📊 Database Schema
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login user
-- `GET /api/v1/auth/me` - Get current user
-- `PATCH /api/v1/auth/me/profile` - Update profile
+The application uses PostgreSQL with the following main entities:
+- **Users**: User accounts and profiles
+- **Tracks**: Audio files with metadata
+- **Trades**: Peer-to-peer trading system
+- **Payments**: Stripe payment integration
+- **Groups**: DJ record pools
+- **Notifications**: Real-time notifications
 
-### Tracks
-- `GET /api/v1/tracks` - Search tracks
-- `POST /api/v1/tracks` - Create track
-- `GET /api/v1/tracks/:id` - Get track details
-- `POST /api/v1/tracks/:id/upload-init` - Initialize upload
-- `POST /api/v1/tracks/:id/upload-complete` - Complete upload
+## 🔐 Security Features
 
-### Trading
-- `GET /api/v1/trades` - Get user trades
-- `POST /api/v1/trades` - Create trade
-- `GET /api/v1/trades/:id` - Get trade details
-- `POST /api/v1/trades/:id/respond` - Respond to trade
-
-### Payments
-- `POST /api/v1/payments/purchase` - Create purchase
-- `GET /api/v1/payments/credits` - Get credits balance
-- `POST /api/v1/payments/credits/add` - Add credits
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend
-npm test                    # Run all tests
-npm run test:watch         # Run tests in watch mode
-npm run test:coverage      # Run tests with coverage
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test                   # Run all tests
-npm run test:watch        # Run tests in watch mode
-npm run test:coverage     # Run tests with coverage
-```
+- JWT-based authentication
+- Rate limiting on all endpoints
+- Input validation and sanitization
+- Secure file uploads with presigned URLs
+- Encrypted password storage
+- CORS protection
+- Helmet.js security headers
 
 ## 🚀 Deployment
 
 ### Production Build
 ```bash
 npm run build
+npm start
 ```
 
-### Docker Production
+### Docker Deployment
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+docker-compose up -d
 ```
 
-### Environment Setup
-1. Set up PostgreSQL database
-2. Set up Redis instance
-3. Configure AWS S3 bucket
-4. Set up Stripe account
-5. Configure environment variables
-6. Run database migrations
-7. Deploy application
+### Environment Variables for Production
+Ensure all environment variables are properly configured for your production environment.
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
@@ -254,24 +206,18 @@ docker-compose -f docker-compose.prod.yml up --build
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🆘 Support
+
+- **Documentation**: [https://docs.djthrift.com](https://docs.djthrift.com)
+- **Issues**: [GitHub Issues](https://github.com/masochist666/dj-thrift-marketplace/issues)
+- **Email**: support@djthrift.com
+
 ## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org/) - React framework
-- [Express.js](https://expressjs.com/) - Node.js framework
-- [PostgreSQL](https://www.postgresql.org/) - Database
-- [Redis](https://redis.io/) - Caching
-- [Stripe](https://stripe.com/) - Payments
-- [AWS S3](https://aws.amazon.com/s3/) - File storage
-- [FFmpeg](https://ffmpeg.org/) - Audio processing
-
-## 📞 Support
-
-For support, email support@djthrift.com or join our Discord community.
+- Built with ❤️ for the DJ community
+- Powered by modern web technologies
+- Inspired by peer-to-peer trading platforms
 
 ---
 
-Built with ❤️ for the DJ community
-=======
-# dj-thrift-marketplace
-🎶 DJ Thrift Marketplace - Peer-to-peer DJ track trading platform with real-time features, audio analysis, and community tools
->>>>>>> 7b4fdedce9ab29492fa475e3f5ac5e3dfca45cdc
+**🎶 Happy Trading! 🎶**

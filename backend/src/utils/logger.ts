@@ -1,14 +1,12 @@
 import winston from 'winston';
 
-const logFormat = winston.format.combine(
-  winston.format.timestamp(),
-  winston.format.errors({ stack: true }),
-  winston.format.json()
-);
-
-export const logger = winston.createLogger({
+const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
-  format: logFormat,
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
   defaultMeta: { service: 'dj-thrift-api' },
   transports: [
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
@@ -16,7 +14,6 @@ export const logger = winston.createLogger({
   ],
 });
 
-// If we're not in production, log to the console as well
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
@@ -26,4 +23,4 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-export default logger;
+export { logger };

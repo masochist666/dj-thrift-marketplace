@@ -1,8 +1,10 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: dj-thrift-postgres
     environment:
       POSTGRES_DB: dj_thrift
       POSTGRES_USER: postgres
@@ -18,8 +20,10 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis Cache
   redis:
     image: redis:7-alpine
+    container_name: dj-thrift-redis
     ports:
       - "6379:6379"
     volumes:
@@ -30,28 +34,25 @@ services:
       timeout: 5s
       retries: 5
 
+  # Backend API
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: dj-thrift-backend
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: dj_thrift
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your_super_secret_jwt_key_here
+      FRONTEND_URL: http://localhost:3000
     ports:
       - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=password
-      - DB_NAME=dj_thrift
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
-      - AWS_ACCESS_KEY_ID=your-aws-key
-      - AWS_SECRET_ACCESS_KEY=your-aws-secret
-      - AWS_REGION=us-east-1
-      - S3_BUCKET=your-s3-bucket
-      - STRIPE_SECRET_KEY=your-stripe-secret
-      - FRONTEND_URL=http://localhost:3000
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,23 +61,25 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    command: npm run dev
 
+  # Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: dj-thrift-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+      NEXT_PUBLIC_WS_URL: http://localhost:5000
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
-      - NEXT_PUBLIC_WS_URL=http://localhost:5000
     depends_on:
       - backend
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - /app/.next
+    command: npm run dev
 
 volumes:
   postgres_data:

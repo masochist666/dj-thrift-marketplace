@@ -60,3 +60,4 @@ echo "Press Ctrl+C to stop all servers..."
 
 # Wait for user to stop
 wait
+
