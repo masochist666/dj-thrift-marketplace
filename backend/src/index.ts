@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -56,7 +56,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(compression());
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(limiter);
@@ -91,7 +91,7 @@ app.use('/api/v1/webhooks', webhookRoutes);
 app.use('/api/v1/admin', apiLimiter, adminRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
@@ -102,7 +102,7 @@ app.get('/health', (req, res) => {
 });
 
 // API documentation
-app.get('/api/v1', (req, res) => {
+app.get('/api/v1', (req: Request, res: Response) => {
   res.json({
     name: 'DJ Thrift Marketplace API',
     version: '1.0.0',
@@ -126,7 +126,7 @@ app.use(errorHandler);
 app.use(notFoundHandler);
 
 // WebSocket connection handling
-io.on('connection', (socket) => {
+io.on('connection', (socket: any) => {
   wsService.handleConnection(socket);
 });
 
@@ -157,12 +157,12 @@ process.on('SIGINT', () => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught Exception:', error);
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
