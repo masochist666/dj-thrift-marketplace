@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎶 DJ Thrift Marketplace
 
 A peer-to-peer DJ track trading platform built with modern web technologies. Trade, buy, and sell DJ tracks with built-in audio analysis, real-time trading, and community features.
@@ -270,3 +271,7 @@ For support, email support@djthrift.com or join our Discord community.
 ---
 
 Built with ❤️ for the DJ community
+=======
+# dj-thrift-marketplace
+🎶 DJ Thrift Marketplace - Peer-to-peer DJ track trading platform with real-time features, audio analysis, and community tools
+>>>>>>> 7b4fdedce9ab29492fa475e3f5ac5e3dfca45cdc
